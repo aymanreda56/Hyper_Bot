@@ -1,18 +1,48 @@
 #include<string.h>
 
-void EstSnX(void);
+
+
+
+
+
+/*     we have 5 sensors arranged like this...
+
+
+                                                                                   [2]
+                                                                                   straight
+                                                                     [1]                           [3]
+                                                                     Left                          Right
+                                                   [0]                                                              [4]
+                                                   sharpLeft                                                        sharpRight
+
+
+
+*we read from all 5 sensors with very small delays in between readings to prevent interference on the single ADC
+*in this version we implemented 5 functions for motor motion (go straight, turn sharp left, turn left, turn sharpright, turn right, start/stop)
+*left motor is motor A, right motor is motor B
+*/
+
+//reading variables for sensors
 int readingSharpLeft;
 int readingSharpRight;
 int readingLeft;
 int readingRight;
 int readingStraight;
 
-#define enA 9
-#define enB 10
-#define in1 6
-#define in2 7
-#define in3 11
-#define in4 12
+
+//booleans used in toggles
+bool startmotion;
+bool buttonpress0;
+bool buttonpress1;
+
+
+
+#define enA 9                    //enable motor A
+#define enB 10                   //enable motor B
+#define in1 6                    //for motor A
+#define in2 7                    //for motor B
+#define in3 11                   //for motor B
+#define in4 12                   //for motor B
 #define button 4
 
 
@@ -25,10 +55,17 @@ int readingStraight;
 
 
 
-int speedP;
+int speedP;                       //speed of motor
 int pwmOutputA = 0;
 int pwmOutputB = 0;
 
+
+
+void check_button()                   //assuming the button gives 1 when pressed down
+{
+  buttonpress0 = buttonpress1;
+  buttonpress1 = digitalRead(button);
+}
 
 
 
@@ -90,8 +127,6 @@ void setup(){
   pinMode(A0, INPUT);
   pinMode(A2, INPUT);
   pinMode(A1, INPUT);
-  
-  //digitalWrite(7, HIGH);
 
 
   pinMode(enA, OUTPUT);
@@ -109,10 +144,13 @@ void setup(){
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
 
-  Serial.println("hello");
+
+  startmotion = false;
 
   
 }
+
+//dunno about those variables but they are used for timers instead of delays
 unsigned long t0 = 0;
 unsigned long t1 = 0;
 bool flag = false;
@@ -143,37 +181,79 @@ void loop(){
   Serial.print("    ");
   delay(20);
 
-while((readingSharpLeft != 0) && (readingSharpRight != 0))
-{
-
-while((readingLeft != 0) && (readingRight != 0))
-{
-  goStraight();
   
+//toggle motion to start/stop,  when coming to a stop you don't do anything and stuck in an infinite loop, when starting from beginning you check for button press then start motion.
+if((readingSharpLeft & readingSharpRight == 0) && (!startmotion))                   
+{
+  while(!startmotion)
+  {
+      check_button();
+      if((buttonpress1 == false) && (buttonpress0 == true))
+      {
+        startmotion = true;
+        break;
+      }
+  }
+  goStraight();                                                     //we go straight until we get out of the start/stop pit
 }
 
-  if(readingLeft == 0)
-  {
-    turnLeft();  
-  }
-  else if(readingRight == 0)
-  {
-    turnRight();
-  }
+else
+{
+  
+    startmotion = false;                                         //resetting the variable right after we get out of the start/stop pit
+
+    if(readingSharpLeft == 0)
+    {
+      turnSharpLeft();
+    }
+    else if (readingSharpRight == 0)
+    {
+      turnSharpRight();
+    }
+    else if (readingLeft == 0)
+    {
+      turnLeft();
+    }
+    else if (readingRight == 0)
+    {
+      turnRight();
+    }
+    else goStraight();
+
+
 }
 
+//this is previous code
 
-
-  if(readingSharpLeft == 0)
-  {
-    turnSharpLeft();
-  }
-  else if(readingSharpRight == 0)
-  {
-    turnSharpRight();
-  }
-
-      
-      
+    /*
+    while((readingSharpLeft != 0) && (readingSharpRight != 0))
+    {
     
+        while((readingLeft != 0) && (readingRight != 0))
+        {
+          goStraight(); 
+        }
+    
+      if(readingLeft == 0)
+      {
+        turnLeft();  
+      }
+      else if(readingRight == 0)
+      {
+        turnRight();
+      }
+    }
+    
+     if(readingSharpLeft == 0)
+     {
+        turnSharpLeft();
+     }
+     else if(readingSharpRight == 0)
+     {
+        turnSharpRight();
+     }
+
+      */
+      
+
 }
