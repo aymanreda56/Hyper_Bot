@@ -6,7 +6,6 @@
 #define in4 12                   //for motor B
 #define button 4
 
-
 #define sensorSharpLeft A0
 #define sensorSharpRight A4
 #define sensorLeft A1

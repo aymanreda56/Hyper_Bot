@@ -243,7 +243,7 @@ void loop() {
   Serial.print(sensorReading[4]);
   Serial.print("    ");
   Serial.println();
-//  delay(20);
+// delay(20);
 
  // thresholdSensor();
  // mode = checkMode();
