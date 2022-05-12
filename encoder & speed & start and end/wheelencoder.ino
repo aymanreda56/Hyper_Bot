@@ -5,6 +5,8 @@
 #define in3 11                   //for motor B
 #define in4 12                   //for motor B
 #define button 4
+#define encoder1_pin 2           // This pin for wheel encoder1 
+#define encoder2_pin 3           // This pin for wheel encoder2
 
 
 #define sensorSharpLeft A0
@@ -21,7 +23,15 @@ int mode = 0;
 int previousPress;
 int currentPress;
 int error= 0;
-
+// Encoder
+int pulse1 = 0;
+int pulse2 = 0;
+unsigned long startTime=0;
+bool hasStart = true; 
+float rpm1 = 0;
+float rpm2 = 0;
+float dis1 = 0;
+float dis2 = 0;
 
 // this function returns an integer representing the error type
   // 0 -> goStraight  00100
@@ -110,9 +120,32 @@ void decideSpeed(int error) {
   }
 }
 
+ void counter1()
+ {
+    //Update count
+      pulse1++;    
+ }
+ void counter2()
+ {
+    //Update count
+      pulse2++;    
+ }
+
 
 unsigned long t1, t0;
 
+void saveStartTime(){
+    if(hasStart)
+    {
+        startTime = millis();
+        hasStart = false;
+    }
+
+}
+void calcualteRPM(){
+    rpm1 = (60 * 1000 / 19 )/ ((millis() - startTime)* pulse1);
+    rpm2 = (60 * 1000 / 19 )/ ((millis() - startTime)* pulse2);
+}
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -129,6 +162,13 @@ void setup() {
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
+
+  //Interrupt 0 is digital pin 2, so that is where the IR detector is connected
+  //Triggers on FALLING (change from HIGH to LOW)
+  pinMode(encoder1_pin, INPUT);
+  pinMode(encoder2_pin, INPUT);
+  attachInterrupt(0, counter1, FALLING);
+  attachInterrupt(1, counter2, FALLING);
 
   previousPress = LOW;
   currentPress = LOW;
@@ -211,13 +251,14 @@ void loop() {
   // case of moving
   if (mode == 1){
     error = PID(sensorReading);
+    saveStartTime();
     decideSpeed(error);
     Serial.println(error);
-    delay(1000);
   }
 
 // case of stopping
   else if(mode == 2) {
+    calculateRPM1();
     analogWrite(enA, 0);   // left motor
     analogWrite(enB, 0);   // right motor
   }
