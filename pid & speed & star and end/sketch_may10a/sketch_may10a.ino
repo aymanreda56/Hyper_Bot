@@ -10,7 +10,7 @@
 #define sensorSharpRight A4
 #define sensorLeft A1
 #define sensorRight A3
-#define sensorStraight A2
+#define sensorStraight A2 
 
 // this byte array to read the line sensors  { sharpLeft, left, center, right, sharpRight } 
 byte sensorReading[] = {0, 0, 0, 0, 0};
