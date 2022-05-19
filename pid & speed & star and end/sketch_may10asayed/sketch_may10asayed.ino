@@ -101,12 +101,17 @@ int checkMode(){
 
 
 void decideSpeed(int error) {
-  int initSpeed = 55;
+  int initSpeed = 70;
+  int initSpeed_after_corr = initSpeed;
   int kp = 20;
+  if(error == 4 || error == 5 || error == -4 || error == -5)
+  {
+    initSpeed_after_corr = 50;
+  }
   if(error != 5){
-    analogWrite(enA, initSpeed + error*kp);   // left motor
+    analogWrite(enA, initSpeed_after_corr + error*kp);   // left motor
     //delay(20);
-    analogWrite(enB, initSpeed - error*kp);   // right motor
+    analogWrite(enB, initSpeed_after_corr - error*kp);   // right motor
   }
   else{
     analogWrite(enA, 0);   // left motor

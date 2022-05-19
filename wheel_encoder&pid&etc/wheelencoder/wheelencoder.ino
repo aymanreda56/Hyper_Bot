@@ -1,32 +1,41 @@
-
-
 #define enA 9                    //enable motor A  (left)
 #define enB 10                   //enable motor B  (right)
-#define in1 7                    //for motor A
-#define in2 6                    //for motor A
-#define in3 12                   //for motor B
-#define in4 11                   //for motor B
+#define in1 6                    //for motor A
+#define in2 7                    //for motor A
+#define in3 11                   //for motor B
+#define in4 12                   //for motor B
 #define button 4
+#define encoder1_pin 2           // This pin for wheel encoder1 
+#define encoder2_pin 3           // This pin for wheel encoder2
 
 
 #define sensorSharpLeft A0
 #define sensorSharpRight A4
 #define sensorLeft A1
 #define sensorRight A3
-
-
-
 #define sensorStraight A2
 
 // this byte array to read the line sensors  { sharpLeft, left, center, right, sharpRight } 
-short sensorReading[] = {0, 0, 0, 0, 0};
+byte sensorReading[] = {0, 0, 0, 0, 0};
 
 // the mode represents the state of the car    0 -> idle    1 -> moving   2 -> stopping   (3 -> intersection ??)
 int mode = 0;
 int previousPress;
 int currentPress;
 int error= 0;
-
+// Encoder
+int pulse1 = 0;
+int pulse2 = 0;
+unsigned long startTime=0;
+bool hasStart = true; 
+float rpm1 = 0;
+float rpm2 = 0;
+float distance1 = 0;
+const int MAX_LENGTH = 10;
+float arrStart[MAX_LENGTH];
+float arrEnd[MAX_LENGTH];
+int distIndex = 0;
+int lastError = -10; 
 
 // this function returns an integer representing the error type
   // 0 -> goStraight  00100
@@ -34,7 +43,7 @@ int error= 0;
   // -2 -> goVeryLeft  01000               2 -> goVeryRight  00010
   // -3 -> goLittleLeftSharp  11000        3 -> goLittleRightSharp  00011
   // -4 -> goVeryLeftSharp  10000          4 -> goVeryRightSharp  00001
-int PID(short* LFSensor){
+int PID(byte* LFSensor){
 
   //thresholdSensor();
 
@@ -62,7 +71,7 @@ int PID(short* LFSensor){
 
 // thresholding the sensorReading array
 void thresholdSensor(){
-  int threshold = 250;
+  int threshold = 50;
   for (int i=0 ; i<5; i++){
     sensorReading[i] = (sensorReading[i] < threshold)? 1 : 0;
     Serial.print(sensorReading[i]);
@@ -101,7 +110,7 @@ int checkMode(){
 
 
 void decideSpeed(int error) {
-  int initSpeed = 55;
+  int initSpeed = 175;
   int kp = 20;
   if(error != 5){
     analogWrite(enA, initSpeed + error*kp);   // left motor
@@ -115,9 +124,49 @@ void decideSpeed(int error) {
   }
 }
 
+ void counter1()
+ {
+    //Update count
+      pulse1++;    
+ }
+ void counter2()
+ {
+    //Update count
+      pulse2++;    
+ }
+
 
 unsigned long t1, t0;
 
+void saveStartTime(){
+    if(hasStart)
+    {
+        startTime = millis();
+        hasStart = false;
+    }
+
+}
+
+void checkErrorStraight(int error)
+{
+    if(error != 0 && lastError == 0)
+    {
+      //calculateDistanes();
+       arrEnd[distIndex] = pulse1;
+       distIndex++;
+    }
+    else if (error ==0 && lastError !=0){
+      arrStart[distIndex] = pulse1;
+    }
+    
+    lasrError = error;
+      
+)
+
+void calcualteRPM(){
+    rpm1 = (60 * 1000 / 19 )/ ((millis() - startTime)* pulse1);
+    rpm2 = (60 * 1000 / 19 )/ ((millis() - startTime)* pulse2);
+}
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -134,6 +183,13 @@ void setup() {
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
+
+  //Interrupt 0 is digital pin 2, so that is where the IR detector is connected
+  //Triggers on FALLING (change from HIGH to LOW)
+  pinMode(encoder1_pin, INPUT);
+  pinMode(encoder2_pin, INPUT);
+  attachInterrupt(0, counter1, FALLING);
+  attachInterrupt(1, counter2, FALLING);
 
   previousPress = LOW;
   currentPress = LOW;
@@ -154,58 +210,49 @@ void setup() {
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
 
-   pinMode(button, OUTPUT);
-   digitalWrite(button, HIGH);
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   t1 = millis();
-  delay(40);
+  while(abs(t1 - t0) > 500){
+    t0 = millis();
+  }
+  t1 = millis();
   
+  sensorReading[0] = analogRead(sensorSharpLeft);
+  t1 = millis();
+  while(abs(t1 - t0) > 500){
+    t0 = millis();
+  }
+  t1 = millis();
+  sensorReading[4] = analogRead(sensorSharpRight);
+  t1 = millis();
+  while(abs(t1 - t0) > 500){
+    t0 = millis();
+  }
+  t1 = millis();
+  sensorReading[1] = analogRead(sensorLeft);
+  t1 = millis();
+  while(abs(t1 - t0) > 500){
+    t0 = millis();
+  }
+  t1 = millis();
+  sensorReading[3] = analogRead(sensorRight);
+  t1 = millis();
+  while(abs(t1 - t0) > 500){
+    t0 = millis();
+  }
+  t1 = millis();
   sensorReading[2] = analogRead(sensorStraight);
   t1 = millis();
   while(abs(t1 - t0) > 500){
     t0 = millis();
   }
   t1 = millis();
-  sensorReading[4] = 255;
-  t1 = millis();
-  while(abs(t1 - t0) > 500){
-    t0 = millis();
-  }
-  t1 = millis();
-  
-  sensorReading[1] = analogRead(sensorLeft);
-  t1 = millis();
-  while(abs(t1 - t0) > 500){
-    t0 = millis();
-  }
- 
-  t1 = millis();
-  sensorReading[3] = analogRead(sensorRight);
-   t1 = millis();
-  while(abs(t1 - t0) > 500){
-    t0 = millis();
-  }
- 
-  t1 = millis();
-  sensorReading[0] = analogRead(sensorSharpLeft);
-   t1 = millis();
-  while(abs(t1 - t0) > 500){
-    t0 = millis();
-  }
- 
-  t1 = millis();
-  sensorReading[4] = analogRead(sensorSharpRight);
-   t1 = millis();
-  while(abs(t1 - t0) > 500){
-    t0 = millis();
-  }
 
   // printing the line sensor readings
-  /*
   Serial.print(sensorReading[0]);
   Serial.print("   ");
   Serial.print(sensorReading[1]);
@@ -217,26 +264,26 @@ void loop() {
   Serial.print(sensorReading[4]);
   Serial.print("    ");
   Serial.println();
-  delay(20);
-  */
+// delay(20);
 
-  thresholdSensor();
-  //mode = checkMode();
+ thresholdSensor();
+ mode = checkMode();
 
   // case of moving
- 
-//  if (mode == 1){
+  if (mode == 1){
     error = PID(sensorReading);
+    checkErrorStraight(error);
+    saveStartTime();
     decideSpeed(error);
-//    Serial.println(error);
-//    delay(1000);
- // }
+    Serial.println(error);
+  }
 
 // case of stopping
- // else if(mode == 2) {
-//    analogWrite(enA, 0);   // left motor
-//    analogWrite(enB, 0);   // right motor
- // }*/
+  else if(mode == 2) {
+    calculateRPM1();
+    analogWrite(enA, 0);   // left motor
+    analogWrite(enB, 0);   // right motor
+  }
   
 
 }

@@ -1,0 +1,52 @@
+int kp = 13;
+int kd = 10;
+
+void decideSpeed(int speed_1) {
+  int initSpeed = 60;
+  //int initSpeed_after_corr = 55;
+
+  const int initialLeft = 85;
+  const int initialRight = 55;
+
+ int speed_A = 0;
+ int speed_B = 0;
+
+ if(error == 4 || error == 3 || error == -4 || error == -3)
+  {
+    //initSpeed_after_corr = 60;
+    
+    speed_A = initialLeft + speed_1;
+    speed_B = initialRight - speed_1;
+    
+    if( speed_A > 80 ){
+      speed_A = 75;
+    }
+    if( speed_A <= 0 ){
+      speed_A = 45;
+    }
+      if(speed_B <= 0){
+      speed_B = 45;
+     }
+     if(speed_B > 80){
+      speed_B = 75;
+     }
+    Serial.println("left motor: ");  Serial.println(initialLeft);  
+      Serial.println("right motor: "); Serial.println(initialRight);
+  
+    
+    analogWrite(enA, speed_A);   // left motor
+     
+     analogWrite(enB, speed_B);   // right motor
+    
+  }
+  else{
+    analogWrite(enA, initialLeft + speed_1 );   // left motor
+    //analogWrite(enA, initSpeed + 30 );   // left motor
+    //delay(20);
+    analogWrite(enB, initialRight - speed_1 );   // right motor
+
+    Serial.println("left motor: ");  Serial.println(initSpeed + speed_1);  
+     Serial.println("right motor: "); Serial.println(initSpeed - speed_1);
+  }
+  
+}

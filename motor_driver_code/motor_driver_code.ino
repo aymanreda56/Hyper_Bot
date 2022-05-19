@@ -1,6 +1,6 @@
-#define enA 9
-#define in1 6
-#define in2 7
+#define enA 10
+#define in1 11
+#define in2 12
 #define button 4
 
 //int rotDirection = 0;
@@ -15,10 +15,11 @@ void setup() {
   pinMode(in2, OUTPUT);
   Serial.println("hello1");
 
-//  pinMode(button, INPUT);
+  pinMode(button, OUTPUT);
   // Set initial rotation direction
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
+  digitalWrite(button, HIGH);
 
   Serial.println("hello");
 }

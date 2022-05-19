@@ -1,0 +1,61 @@
+
+// state 2
+int kp=6;
+int kd =1;
+const int initialLeft = 70;
+const int initialRight = 50;
+int initSpeed = 60;
+
+// state 3
+int kp=6;
+int kd =2;
+const int initialLeft = 70;
+const int initialRight = 50;
+int initSpeed = 60;
+
+// state 4
+int kp=6;
+int kd =3;
+const int initialLeft = 70;
+const int initialRight = 50;
+int initSpeed = 60;
+
+
+// state 5
+kp = 8
+kd = 2
+ const int initialLeft = 70;
+  const int initialRight = 50;
+ if( speed_A > 95 ){
+      speed_A = 100;
+    }
+    if( speed_A <= 50 ){
+      speed_A = 50;
+    }
+      if(speed_B <= 30){
+      speed_B = 40;
+     }
+     if(speed_B > 75){
+      speed_B = 70;
+     }
+     
+
+
+// state 6
+int kp=9;
+int kd =1;
+ const int initialLeft = 70;
+  const int initialRight = 50;
+
+   if( speed_A > 80 ){
+      speed_A = 100;
+    }
+    if( speed_A <= 50 ){
+      speed_A = 50;
+    }
+      if(speed_B <= 20){
+      speed_B = 40;
+     }
+     if(speed_B > 75){
+      speed_B = 70;
+     }
