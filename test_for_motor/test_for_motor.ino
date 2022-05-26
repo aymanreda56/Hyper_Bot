@@ -30,6 +30,10 @@ int readingRight;
 int readingStraight;
 
 
+
+int pot;
+
+
 //booleans used in toggles
 bool startmotion;
 bool buttonpress0;
@@ -41,8 +45,8 @@ bool buttonpress1;
 #define enB 9                   //enable motor B
 #define in1 6                    //for motor A
 #define in2 7                    //for motor B
-#define in3 11                   //for motor B
-#define in4 12                   //for motor B
+#define in3 12                   //for motor B
+#define in4 11                   //for motor B
 #define button 4
 
 
@@ -110,11 +114,11 @@ void turnRight()
 
 void goStraight()
 {
-  pwmOutputB = 100;
-  pwmOutputA = 100;
+  pwmOutputB = speedP;
+  pwmOutputA = 1.2 * speedP;
   analogWrite(enA, pwmOutputA); // Send PWM signal to L298N Enable pin
   analogWrite(enB, pwmOutputB); // Send PWM signal to L298N Enable pin
-  delay(20);
+ // delay(20);
 }
 
 
@@ -127,6 +131,8 @@ void setup(){
   pinMode(A0, INPUT);
   pinMode(A2, INPUT);
   pinMode(A1, INPUT);
+
+  pinMode(A5, INPUT);
 
 
   pinMode(enA, OUTPUT);
@@ -156,38 +162,16 @@ unsigned long t1 = 0;
 bool flag = false;
 
 void loop(){
-goStraight();
+
+  //pot = 80
+  speedP = 100; //map(pot, 0, 1023, 0, 255);
+  if(speedP < 50)
+  {
+    speedP = 0;
+  }
+  Serial.println(speedP);
+  goStraight();
 //this is previous code
 
-    /*
-    while((readingSharpLeft != 0) && (readingSharpRight != 0))
-    {
-    
-        while((readingLeft != 0) && (readingRight != 0))
-        {
-          goStraight(); 
-        }
-    
-      if(readingLeft == 0)
-      {
-        turnLeft();  
-      }
-      else if(readingRight == 0)
-      {
-        turnRight();
-      }
-    }
-    
-     if(readingSharpLeft == 0)
-     {
-        turnSharpLeft();
-     }
-     else if(readingSharpRight == 0)
-     {
-        turnSharpRight();
-     }
-
-      */
-      
-
+   
 }
