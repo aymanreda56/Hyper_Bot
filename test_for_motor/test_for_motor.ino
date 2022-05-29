@@ -41,13 +41,15 @@ bool buttonpress1;
 
 
 
-#define enA 10                    //enable motor A
-#define enB 9                   //enable motor B
-#define in1 6                    //for motor A
-#define in2 7                    //for motor B
+#define enA 10                    //enable motor A  (left)
+#define enB 9                   //enable motor B  (right)
+#define in1 7                    //for motor A
+#define in2 6
+//for motor A
 #define in3 12                   //for motor B
 #define in4 11                   //for motor B
-#define button 4
+#define button 2
+#define kd_read A5
 
 
 #define sensorSharpLeft A0
@@ -106,7 +108,7 @@ void turnLeft()
 void turnRight()
 {
   pwmOutputB = 80;
-  pwmOutputA = 30;
+  pwmOutputA = 0;
   analogWrite(enA, pwmOutputA); // Send PWM signal to L298N Enable pin
   analogWrite(enB, pwmOutputB); // Send PWM signal to L298N Enable pin
   delay(20);
@@ -164,13 +166,13 @@ bool flag = false;
 void loop(){
 
   //pot = 80
-  speedP = 100; //map(pot, 0, 1023, 0, 255);
+  speedP = 80; //map(pot, 0, 1023, 0, 255);
   if(speedP < 50)
   {
     speedP = 0;
   }
   Serial.println(speedP);
-  goStraight();
+  turnLeft();
 //this is previous code
 
    
