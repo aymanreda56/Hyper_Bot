@@ -20,13 +20,13 @@
 short sensorReading[] = {0, 0, 0, 0, 0};
 
 // the mode represents the state of the car    0 -> idle    1 -> moving   2 -> stopping   (3 -> intersection ??)
-int mode = 0;
-int previousPress;
+int mode = 0;              // to tell which mode we are on
+int previousPress;         // this var and the next for debouncing
 int currentPress;
-int error= 0;
+int error= 0;              // the error from the PID
 int previousError = 0;
-bool hasStarted = true;
-int p=0;
+bool hasStarted = true;     // to tell that the car has started moving
+int p=0;  
 int d=0;
 int kp=5;
 int kd =2;

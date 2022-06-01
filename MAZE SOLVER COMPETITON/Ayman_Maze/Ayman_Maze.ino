@@ -30,13 +30,13 @@ int d=0;
 int kp=5;
 int kd =0;
 int cnt = 0;
-char temp;
-bool exitMaze = false;
+char temp;              // used in rearrange function
+bool exitMaze = false;  // to tell if the car solved the maze
 
 
 // these variables are for maze solver
-char path [100];
-byte path_index = 0;
+char path [100];      // an array to store the path the car took
+byte path_index = 0;    // index for the array
 
 
 unsigned long t1, t0;
@@ -70,7 +70,6 @@ int PID(short* LFSensor){
   
 
   return error;
- 
 
 }
 
@@ -243,6 +242,9 @@ void followLineUntilDeadOrIntersect() {
     
     decideSpeed(new_pid());
 
+    // the car will follow the line and continuosly correct it self with pid
+    // until it reaches an intersection or deadend so it will return from the function
+
     if(sensorReading[1] == 0 && sensorReading[2] == 0 && sensorReading[3] == 0 && sensorReading[0] == 0 && sensorReading[4] == 0)
     {
       // There is no line visible ahead, and we didn't see any
@@ -268,6 +270,7 @@ void followLineUntilZeroError_andStop() {
     
     decideSpeed(new_pid());
 
+    // after the car rotates 90 or 180 deg the car correct its path with the help of this function
     if(sensorReading[1] == 0 && sensorReading[2] == 1 && sensorReading[3] == 0)
     {
       analogWrite(enA, 0);   // left motor
@@ -279,100 +282,87 @@ void followLineUntilZeroError_andStop() {
 
 void turnLeft_until_ZeroError() {
   
-  analogWrite(enA, 0);
-      
+   // stop the car first so we can make sure that when the car turn left its center will be on the line
+    analogWrite(enA, 0);
     analogWrite(enB, 0);
-     delay(150);
-/*
-     digitalWrite(in1, LOW);
-     digitalWrite(in2, HIGH);
-     delay(10);
-     analogWrite(enA, 120);
-     delay(150);
-     analogWrite(enA, 0);
-     delay(90);
-     digitalWrite(in1, HIGH);
-     digitalWrite(in2, LOW);
-     delay(10);
-     */
-   analogWrite(enA, 0);   // left motor
-   analogWrite(enB, 80);   // right motor
-//   delay(300);
-  //Serial.println("sharp left");
-  
-   
+    delay(150);
 
-   readSensors();
-   thresholdSensor();
-   while(sensorReading[0] == 1) {
-     readSensors();
-     thresholdSensor();
-   }
-   while(sensorReading[1] == 0)
-   {
-     readSensors();
-     thresholdSensor();
-   }
+    analogWrite(enA, 0);   // left motor
+    analogWrite(enB, 80);   // right motor
 
-   
+    readSensors();
+    thresholdSensor();
 
- followLineUntilZeroError_andStop();
-  
+    // rotates until the left sensor leaves the line
+    while(sensorReading[0] == 1) {
+      readSensors();
+      thresholdSensor();
+    }
+    // rotates until the center sensor becomes on the line
+    while(sensorReading[1] == 0)
+    {
+      readSensors();
+      thresholdSensor();
+    }
+
+  followLineUntilZeroError_andStop();
+
 }
 
 
 void turnRight_until_ZeroError() {
-  analogWrite(enA, 0);
-      
+
+    analogWrite(enA, 0);
     analogWrite(enB, 0);
-     delay(150);
-   analogWrite(enA, 60  *1.2);   // left motor
-   analogWrite(enB, 0);   // right motor
-  //delay(600);
-  
-   readSensors();
-   thresholdSensor();
-   while(sensorReading[4] == 1) {
-     readSensors();
-     thresholdSensor();
-   }
-   while(sensorReading[3] == 0)
-   {
-     readSensors();
-     thresholdSensor();
-   }
+    delay(150);
 
-   
+    analogWrite(enA, 60  *1.2);   // left motor
+    analogWrite(enB, 0);   // right motor
 
- followLineUntilZeroError_andStop();
+
+    readSensors();
+    thresholdSensor();
+    while(sensorReading[4] == 1) {
+      readSensors();
+      thresholdSensor();
+    }
+    while(sensorReading[3] == 0)
+    {
+      readSensors();
+      thresholdSensor();
+    }
+
+    followLineUntilZeroError_andStop();
   
 }
 
 void turnBack_until_ZeroError() {
-  analogWrite(enA, 0);
-      
-    analogWrite(enB, 0);
-     delay(150);
-     digitalWrite(in4,LOW);
-     digitalWrite(in3,HIGH);
-   analogWrite(enA, 80);   // left motor
-   analogWrite(enB, 60);   // right motor
-  //delay(600);
-  
-   readSensors();
-   thresholdSensor();
-   
-   while(sensorReading[2] == 0)
-   {
-     readSensors();
-     thresholdSensor();
-   }
 
-   
-      digitalWrite(in4,HIGH);
-     digitalWrite(in3,LOW);
- followLineUntilZeroError_andStop();
- 
+    analogWrite(enA, 0);
+    analogWrite(enB, 0);
+    delay(150);
+
+    // to rotate we should make on motor rotates on the opposite direction of the other one
+    digitalWrite(in4,LOW);
+    digitalWrite(in3,HIGH);
+
+    analogWrite(enA, 80);   // left motor
+    analogWrite(enB, 60);   // right motor
+    
+    readSensors();
+    thresholdSensor();
+    
+    // rotates 180 deg until the sensor on the center becomes on the line again
+    while(sensorReading[2] == 0)
+    {
+      readSensors();
+      thresholdSensor();
+    }
+
+    digitalWrite(in4,HIGH);
+    digitalWrite(in3,LOW);
+
+    followLineUntilZeroError_andStop();
   
 }
 
@@ -421,6 +411,7 @@ void turn(char dir)
 
 void REARRANGE(int idx)
 {
+    // shift the zeros which were put from the simplification to the right of the path array 
     for (int i = idx; i < path_index-2; i++)
     {
         temp = path[i];
